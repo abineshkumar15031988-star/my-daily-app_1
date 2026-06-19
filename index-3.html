@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#121212"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="icon-192.png"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="My Daily App"/>
+<title>My Daily App</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,Roboto,sans-serif;background:#121212;color:#fff;min-height:100vh;}
+.app{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+
+/* Splash */
+#splash{position:fixed;inset:0;background:#121212;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}
+.sp-logo{width:78px;height:78px;border-radius:20px;background:linear-gradient(135deg,#1D9E75,#185FA5);display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.sp-name{font-size:23px;font-weight:700;}
+.sp-sub{font-size:12px;color:#555;margin-top:4px;}
+
+/* Auth */
+#authWrap{display:none;flex-direction:column;min-height:100vh;background:linear-gradient(160deg,#0d1b0d,#0d1a2a);}
+.auth-top{padding:46px 24px 22px;text-align:center;}
+.auth-logo{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,#1D9E75,#185FA5);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.auth-name{font-size:21px;font-weight:700;}
+.auth-tag{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;}
+.auth-card{background:#1a1a1a;border-radius:22px 22px 0 0;flex:1;padding:22px 20px 36px;border-top:1px solid #2a2a2a;}
+.auth-tabs{display:flex;background:#0f0f0f;border-radius:11px;padding:4px;margin-bottom:18px;}
+.auth-tab{flex:1;padding:9px;border:none;background:none;font-size:13px;font-weight:600;color:#555;border-radius:8px;}
+.auth-tab.on{background:#1D9E75;color:#fff;}
+.fld{margin-bottom:11px;}
+.fld-lbl{font-size:11px;font-weight:600;color:#666;margin-bottom:4px;}
+.fld-inp{width:100%;font-size:14px;padding:11px 13px;border:1.5px solid #2a2a2a;border-radius:10px;background:#0f0f0f;color:#fff;outline:none;}
+.fld-inp.err{border-color:#E24B4A;}
+.fld-msg{font-size:11px;margin-top:3px;min-height:14px;color:#E24B4A;}
+.auth-btn{width:100%;padding:13px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;margin-top:5px;}
+.sw-link{text-align:center;font-size:12px;color:#555;margin-top:13px;}
+.sw-link b{color:#1D9E75;font-weight:700;}
+
+/* Top bar */
+.topbar{background:#1a1a1a;border-bottom:1px solid #2a2a2a;padding:12px 16px 0;position:sticky;top:0;z-index:50;}
+.tb-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.tb-title{font-size:15px;font-weight:700;}
+.score-chip{background:#1a1800;color:#f7c948;border:1px solid #3a3010;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.user-btn{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1D9E75,#185FA5);border:none;color:#fff;font-size:13px;font-weight:700;}
+.tab-bar{display:flex;}
+.tab-btn{flex:1;padding:9px 4px;border:none;background:none;font-size:11px;font-weight:600;color:#555;border-bottom:3px solid transparent;text-align:center;}
+.tab-btn.on{color:#1D9E75;border-bottom-color:#1D9E75;}
+.tab-btn svg{display:block;margin:0 auto 3px;}
+
+.content{flex:1;padding:14px 14px 24px;}
+.screen{display:none;}
+.screen.on{display:block;}
+.card{background:#1E1E1E;border:1px solid #2a2a2a;border-radius:14px;overflow:hidden;margin-bottom:12px;}
+
+/* Points banner */
+.pbanner{background:#1a1800;border:1px solid #3a3010;border-radius:12px;padding:10px 13px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.plvl{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:#f7c948;color:#5a3500;flex-shrink:0;}
+
+/* Today / activities */
+.add-row{display:flex;gap:8px;margin-bottom:10px;}
+.add-inp{flex:1;font-size:13px;padding:10px 12px;border:1px solid #333;border-radius:10px;background:#0f0f0f;color:#fff;outline:none;}
+.gbtn{background:#1D9E75;border:none;border-radius:10px;padding:10px 14px;font-size:13px;color:#fff;font-weight:700;}
+.row{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid #222;}
+.row:last-child{border-bottom:none;}
+.row.done{background:#0a1a0a;}
+.rinfo{flex:1;min-width:0;}
+.rname{font-size:13px;font-weight:500;}
+.rname.strike{text-decoration:line-through;color:#1D9E75;}
+.rsub{font-size:10px;color:#1D9E75;margin-top:2px;}
+.clockbtn{background:#0f0f0f;border:1px solid #333;border-radius:8px;width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.circle{width:27px;height:27px;border-radius:50%;border:2px solid #333;background:none;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;}
+.circle.chk{background:#1D9E75;border-color:#1D9E75;}
+.dbtn{background:#1a0d0d;border:1px solid #3a1a1a;border-radius:8px;width:30px;height:30px;color:#E24B4A;font-size:15px;flex-shrink:0;}
+.pts-tag{font-size:10px;font-weight:700;color:#c7a000;background:#1a1800;padding:2px 7px;border-radius:9px;flex-shrink:0;}
+.empty-state{padding:30px 16px;text-align:center;color:#444;font-size:12px;}
+
+/* History */
+.hist-card{background:#1E1E1E;border:1px solid #2a2a2a;border-radius:13px;padding:12px 13px;margin-bottom:9px;}
+.hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+.hist-name{font-size:13px;font-weight:600;}
+.hist-streak{font-size:12px;font-weight:700;color:#EF9F27;}
+.hist-sub{font-size:10px;color:#555;margin-bottom:8px;}
+.hist-dots{display:flex;gap:4px;flex-wrap:wrap;}
+.hdot{width:18px;height:18px;border-radius:5px;}
+.hdot-done{background:#1D9E75;}
+.hdot-miss{background:#2a2a2a;}
+
+/* Repeat type picker */
+.rtype-row{display:flex;gap:6px;margin-bottom:12px;}
+.rtype-btn{flex:1;padding:9px 3px;border:1.5px solid #2a2a2a;border-radius:10px;background:#0f0f0f;font-size:11px;text-align:center;color:#555;}
+.rtype-btn.sel{border-color:#1D9E75;background:#0d1a0d;color:#1D9E75;}
+.wdbtn{width:34px;height:34px;border-radius:50%;border:1.5px solid #2a2a2a;background:#0f0f0f;color:#555;font-size:12px;font-weight:700;}
+.wdbtn.sel{border-color:#1D9E75;background:#1D9E75;color:#fff;}
+.editsub-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.editsub-lbl{font-size:11px;color:#666;flex-shrink:0;}
+.editsub-inp{flex:1;font-size:13px;padding:8px 10px;border:1px solid #2a2a2a;border-radius:9px;background:#0f0f0f;color:#fff;outline:none;}
+
+/* GPS */
+.gcard{background:#0d1a0d;border:1px solid #1a3a1a;border-radius:14px;padding:13px;margin-bottom:12px;}
+.atypes{display:flex;gap:6px;margin-bottom:10px;}
+.atype{flex:1;padding:8px 3px;border:2px solid #2a2a2a;border-radius:10px;background:#0f0f0f;font-size:11px;text-align:center;color:#555;}
+.atype.sel{border-color:#1D9E75;background:#0d1a0d;color:#1D9E75;}
+.gstats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.gs{background:#0f0f0f;border-radius:11px;padding:10px;text-align:center;border:1px solid #1a3a1a;}
+.gsv{font-size:18px;font-weight:700;color:#1D9E75;}
+.gsl{font-size:10px;color:#444;margin-top:2px;}
+.gbtns{display:flex;gap:8px;}
+.gactbtn{flex:1;padding:12px;border:none;border-radius:12px;font-size:13px;font-weight:700;}
+.ggo{background:#1D9E75;color:#fff;}
+.gpause{background:#EF9F27;color:#fff;}
+.gstop{background:#0f0f0f;color:#E24B4A;border:2px solid #E24B4A;width:52px;flex:none;}
+.gpw{background:#1a3a1a;border-radius:99px;height:6px;overflow:hidden;margin-bottom:9px;}
+.gpf{height:100%;background:#1D9E75;border-radius:99px;}
+.gerr{font-size:11px;color:#EF9F27;text-align:center;padding:8px;background:#1a1500;border-radius:9px;margin-bottom:9px;}
+
+/* Profile modal */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+.mb{background:#1a1a1a;border-radius:20px 20px 0 0;padding:18px 17px 30px;width:100%;max-width:430px;border-top:1px solid #2a2a2a;}
+.logout-btn{width:100%;padding:12px;background:#1a0d0d;color:#E24B4A;border:none;border-radius:12px;font-size:14px;font-weight:700;margin-top:14px;}
+
+/* Milestone */
+.ms-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;}
+.ms-box{background:#1a1a1a;border-radius:22px;padding:26px 18px 20px;max-width:280px;width:100%;text-align:center;border:1px solid #2a2a2a;}
+.msave{width:100%;padding:12px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;}
+.gopts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:15px;}
+.gopt{padding:9px 3px;border:1.5px solid #2a2a2a;border-radius:9px;background:#0f0f0f;font-size:11px;text-align:center;color:#fff;}
+.gopt.sel{border-color:#1D9E75;background:#0d1a0d;color:#1D9E75;}
+.mcancel{width:100%;padding:9px;background:none;color:#555;border:none;font-size:13px;margin-top:5px;}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="sp-logo"><svg viewBox="0 0 24 24" width="42" height="42" stroke="#fff" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+  <div class="sp-name">My Daily App</div>
+  <div class="sp-sub">Loading...</div>
+</div>
+
+<div id="authWrap">
+  <div class="auth-top">
+    <div class="auth-logo"><svg viewBox="0 0 24 24" width="34" height="34" stroke="#fff" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+    <div class="auth-name">My Daily App</div>
+    <div class="auth-tag">Activities &amp; Distance Tracker</div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab on" id="atab0" onclick="switchAuth('login')">Sign In</button>
+      <button class="auth-tab" id="atab1" onclick="switchAuth('signup')">Create Account</button>
+    </div>
+    <div id="authArea"></div>
+  </div>
+</div>
+
+<div id="mainApp" class="app" style="display:none">
+  <div class="topbar">
+    <div class="tb-row">
+      <div class="tb-title">My Daily App</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="score-chip" id="scoreChip">0 pts</div>
+        <button class="user-btn" id="userBtn" onclick="openProfile()">U</button>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn on" id="tb0" onclick="showTab('today',0)">
+        <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Activities
+      </button>
+      <button class="tab-btn" id="tb1" onclick="showTab('gps',1)">
+        <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1118 0zM12 13a3 3 0 110-6 3 3 0 010 6z"/></svg>
+        Distance
+      </button>
+      <button class="tab-btn" id="tb2" onclick="showTab('history',2)">
+        <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>
+        History
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div id="tab-today" class="screen on">
+      <div class="pbanner">
+        <div class="plvl" id="plvl">Beginner</div>
+        <div style="font-size:11px;color:#ccc;flex:1" id="pmsg">Complete tasks to earn points!</div>
+      </div>
+      <div class="add-row">
+        <input class="add-inp" id="newActInp" placeholder="Add activity..." onkeydown="if(event.key==='Enter')addAct()"/>
+        <button class="gbtn" onclick="addAct()">Add</button>
+      </div>
+      <div class="card" id="actList"></div>
+    </div>
+
+    <div id="tab-gps" class="screen">
+      <div class="gcard">
+        <div class="atypes">
+          <button class="atype sel" id="at0" onclick="setAType('walk')">Walk</button>
+          <button class="atype" id="at1" onclick="setAType('run')">Run</button>
+          <button class="atype" id="at2" onclick="setAType('cycle')">Cycle</button>
+        </div>
+        <div id="gpsErrArea"></div>
+        <div class="gstats">
+          <div class="gs"><div class="gsv" id="gDist">0.00</div><div class="gsl">km today</div></div>
+          <div class="gs"><div class="gsv" id="gTime">00:00</div><div class="gsl">this session</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:11px;color:#1D9E75;font-weight:700" id="gGoalLbl">Goal: 5 km</span>
+          <button onclick="openDGoal()" style="background:none;border:none;color:#1D9E75;font-size:11px;font-weight:700">Edit</button>
+        </div>
+        <div class="gpw"><div class="gpf" id="gpFill" style="width:0%"></div></div>
+        <div class="gbtns" id="gpsBtns">
+          <button class="gactbtn ggo" onclick="startGPS()">Start Tracking</button>
+        </div>
+      </div>
+      <div class="card" id="gHistCard">
+        <div style="padding:11px 13px;font-size:12px;font-weight:700;border-bottom:1px solid #222">Today's Sessions</div>
+        <div id="gHistList"></div>
+      </div>
+    </div>
+
+    <div id="tab-history" class="screen">
+      <div id="historyList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="profileOv" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="mb">
+    <div style="display:flex;align-items:center;gap:12px;padding-bottom:13px;border-bottom:1px solid #222;margin-bottom:13px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1D9E75,#185FA5);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0" id="profileAvatar">U</div>
+      <div>
+        <div style="font-size:14px;font-weight:700" id="profileName">User</div>
+        <div style="font-size:11px;color:#555;margin-top:2px" id="profileEmail"></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#555;text-align:center;margin-bottom:10px" id="profilePts">0 pts today</div>
+    <div style="border-top:1px solid #222;padding-top:13px;margin-top:3px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:9px">Activity Reminders</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+        <span style="font-size:12px;color:#ccc">Enable notifications</span>
+        <button id="notifToggle" onclick="toggleNotif()" style="width:44px;height:24px;border-radius:99px;border:none;background:#333;position:relative;flex-shrink:0">
+          <span id="notifKnob" style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s"></span>
+        </button>
+      </div>
+      <div style="font-size:10px;color:#444;margin-top:6px" id="notifStatus"></div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="ov" id="actTimeOv" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="mb" style="max-height:85vh;overflow-y:auto">
+    <div style="font-size:15px;font-weight:700;margin-bottom:3px">Edit activity</div>
+    <div style="font-size:12px;color:#555;margin-bottom:14px" id="actEditName"></div>
+
+    <div style="font-size:11px;font-weight:600;color:#666;margin-bottom:7px">Repeats</div>
+    <div class="rtype-row">
+      <button class="rtype-btn" id="rtype-daily" onclick="selRepeatType('daily')">Daily</button>
+      <button class="rtype-btn" id="rtype-weekly" onclick="selRepeatType('weekly')">Weekly</button>
+      <button class="rtype-btn" id="rtype-every_n" onclick="selRepeatType('every_n')">Every N days</button>
+      <button class="rtype-btn" id="rtype-monthly" onclick="selRepeatType('monthly')">Monthly</button>
+    </div>
+
+    <div id="weeklyRow" style="display:none;margin-bottom:12px">
+      <div style="font-size:11px;color:#666;margin-bottom:7px">Pick days</div>
+      <div id="weekDayPicker" style="display:flex;gap:7px;justify-content:space-between"></div>
+    </div>
+
+    <div id="everyNRow" style="display:none">
+      <div class="editsub-row">
+        <span class="editsub-lbl">Every</span>
+        <input type="number" id="everyNInp" min="2" max="60" value="2" class="editsub-inp" style="max-width:70px"/>
+        <span class="editsub-lbl">days</span>
+      </div>
+      <div class="editsub-row">
+        <span class="editsub-lbl">Start date</span>
+        <input type="date" id="everyNStartInp" class="editsub-inp"/>
+      </div>
+    </div>
+
+    <div id="monthlyRow" style="display:none">
+      <div class="editsub-row">
+        <span class="editsub-lbl">Day of month</span>
+        <input type="number" id="monthlyDateInp" min="1" max="31" value="1" class="editsub-inp" style="max-width:70px"/>
+      </div>
+    </div>
+
+    <div style="font-size:11px;font-weight:600;color:#666;margin:5px 0 7px">Reminder time (optional)</div>
+    <input type="time" id="actTimeInp" style="width:100%;font-size:18px;font-weight:700;padding:11px;border:1.5px solid #2a2a2a;border-radius:11px;text-align:center;color:#fff;outline:none;margin-bottom:14px;background:#0f0f0f"/>
+
+    <button class="msave" onclick="saveActTime()">Save</button>
+    <button class="mcancel" onclick="clearActTime()" style="color:#E24B4A">Remove reminder time</button>
+    <button class="mcancel" onclick="document.getElementById('actTimeOv').style.display='none'">Cancel</button>
+  </div>
+</div>
+
+<div class="ov" id="dGoalOv" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="mb">
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px">Distance goal (km)</div>
+    <div class="gopts" id="dGoalOpts"></div>
+    <button class="msave" onclick="saveDGoal()">Save</button>
+    <button class="mcancel" onclick="document.getElementById('dGoalOv').style.display='none'">Cancel</button>
+  </div>
+</div>
+
+<div class="ms-ov" id="msOv" style="display:none">
+  <div class="ms-box">
+    <div style="font-size:54px;margin-bottom:8px" id="msEmoji">🎉</div>
+    <div style="font-size:25px;font-weight:700;margin-bottom:4px" id="msPct">100%</div>
+    <div style="font-size:13px;margin-bottom:4px" id="msMsg">Goal reached!</div>
+    <div style="font-size:11px;color:#555;margin-bottom:14px" id="msSub">Great job!</div>
+    <button class="msave" onclick="document.getElementById('msOv').style.display='none'">Keep Going</button>
+  </div>
+</div>
+
+<script>
+
+/* ===== Storage with fallback ===== */
+var _mem = {};
+var _useLS = true;
+try { localStorage.setItem('_t','1'); localStorage.removeItem('_t'); } catch(e) { _useLS = false; }
+
+function ls(k){
+  if(_useLS){ try { return localStorage.getItem(k); } catch(e){} }
+  return _mem[k] || null;
+}
+function ss(k,v){
+  if(_useLS){ try { localStorage.setItem(k,v); return; } catch(e){} }
+  _mem[k] = v;
+}
+function rd(k){
+  if(_useLS){ try { localStorage.removeItem(k); } catch(e){} }
+  delete _mem[k];
+}
+
+/* ===== Auth helpers ===== */
+function hash(str){
+  var h = 5381;
+  for(var i=0; i<str.length; i++){
+    h = ((h << 5) + h) + str.charCodeAt(i);
+    h = h & h;
+  }
+  return String(h);
+}
+function isEmail(s){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
+function isMobile(s){ return /^[0-9]{10}$/.test(s); }
+
+function getUsers(){
+  try { var v = ls('da_users'); return v ? JSON.parse(v) : {}; } catch(e){ return {}; }
+}
+function saveUsers(u){ ss('da_users', JSON.stringify(u)); }
+
+function getSession(){
+  try { var s = ls('da_session'); return s ? JSON.parse(s) : null; } catch(e){ return null; }
+}
+function saveSession(u){
+  ss('da_session', JSON.stringify({ email: u.email, name: u.name }));
+}
+function clearSession(){ rd('da_session'); }
+
+function findUser(idVal){
+  var users = getUsers();
+  if(users[idVal]) return users[idVal];
+  for(var k in users){
+    if(users[k].mobile === idVal) return users[k];
+  }
+  return null;
+}
+
+/* ===== Per-user data keys ===== */
+var curUser = null;
+function uKey(suffix){
+  var em = curUser ? curUser.email : 'guest';
+  return 'da_' + em + '_' + suffix;
+}
+function uls(suffix){ return ls(uKey(suffix)); }
+function uss(suffix, v){ ss(uKey(suffix), v); }
+
+function loadJ(key, dflt){
+  try { var v = uls(key); return v ? JSON.parse(v) : dflt; } catch(e){ return dflt; }
+}
+function saveJ(key, v){ uss(key, JSON.stringify(v)); }
+
+/* ===== Auth UI ===== */
+var authMode = 'login';
+
+function switchAuth(m){
+  authMode = m;
+  document.getElementById('atab0').classList.toggle('on', m === 'login');
+  document.getElementById('atab1').classList.toggle('on', m === 'signup');
+  renderAuth();
+}
+
+function renderAuth(){
+  var area = document.getElementById('authArea');
+  if(!area) return;
+  if(authMode === 'login'){
+    area.innerHTML =
+      '<div class="fld"><div class="fld-lbl">Email or Mobile</div>' +
+      '<input class="fld-inp" id="li-id" placeholder="you@email.com or 9876543210"/>' +
+      '<div class="fld-msg" id="li-id-msg"></div></div>' +
+      '<div class="fld"><div class="fld-lbl">Password</div>' +
+      '<input class="fld-inp" id="li-pw" type="password" placeholder="Your password"/>' +
+      '<div class="fld-msg" id="li-pw-msg"></div></div>' +
+      '<button class="auth-btn" onclick="doLogin()">Sign In</button>' +
+      '<div class="sw-link">New here? <b onclick="switchAuth(\'signup\')">Create account</b></div>';
+  } else {
+    area.innerHTML =
+      '<div class="fld"><div class="fld-lbl">Full Name</div>' +
+      '<input class="fld-inp" id="su-name" placeholder="Your name"/>' +
+      '<div class="fld-msg" id="su-name-msg"></div></div>' +
+      '<div class="fld"><div class="fld-lbl">Email</div>' +
+      '<input class="fld-inp" id="su-email" placeholder="you@email.com"/>' +
+      '<div class="fld-msg" id="su-email-msg"></div></div>' +
+      '<div class="fld"><div class="fld-lbl">Mobile Number</div>' +
+      '<input class="fld-inp" id="su-mobile" placeholder="9876543210"/>' +
+      '<div class="fld-msg" id="su-mobile-msg"></div></div>' +
+      '<div class="fld"><div class="fld-lbl">Password</div>' +
+      '<input class="fld-inp" id="su-pw" type="password" placeholder="Min 6 characters"/>' +
+      '<div class="fld-msg" id="su-pw-msg"></div></div>' +
+      '<button class="auth-btn" onclick="doSignup()">Create Account</button>' +
+      '<div class="sw-link">Already have an account? <b onclick="switchAuth(\'login\')">Sign in</b></div>';
+  }
+}
+
+function setErr(id, msg){
+  var inp = document.getElementById(id);
+  var msgEl = document.getElementById(id + '-msg');
+  if(inp) inp.classList.toggle('err', !!msg);
+  if(msgEl) msgEl.textContent = msg || '';
+}
+
+function doLogin(){
+  var idVal = (document.getElementById('li-id').value || '').trim();
+  var pw = document.getElementById('li-pw').value || '';
+  setErr('li-id',''); setErr('li-pw','');
+  if(!idVal){ setErr('li-id','Enter email or mobile number'); return; }
+  var user = findUser(idVal);
+  if(!user){ setErr('li-id','No account found'); return; }
+  if(user.pw !== hash(pw)){ setErr('li-pw','Incorrect password'); return; }
+  loginUser(user);
+}
+
+function doSignup(){
+  var name = (document.getElementById('su-name').value || '').trim();
+  var email = (document.getElementById('su-email').value || '').trim().toLowerCase();
+  var mobile = (document.getElementById('su-mobile').value || '').trim();
+  var pw = document.getElementById('su-pw').value || '';
+  setErr('su-name',''); setErr('su-email',''); setErr('su-mobile',''); setErr('su-pw','');
+  var ok = true;
+  if(!name){ setErr('su-name','Enter your name'); ok = false; }
+  if(!isEmail(email)){ setErr('su-email','Enter a valid email'); ok = false; }
+  if(!isMobile(mobile)){ setErr('su-mobile','Enter 10-digit mobile number'); ok = false; }
+  if(pw.length < 6){ setErr('su-pw','Min 6 characters'); ok = false; }
+  if(!ok) return;
+  var users = getUsers();
+  if(users[email]){ setErr('su-email','Account already exists'); return; }
+  var user = { name: name, email: email, mobile: mobile, pw: hash(pw) };
+  users[email] = user;
+  saveUsers(users);
+  loginUser(user);
+}
+
+function loginUser(user){
+  curUser = user;
+  saveSession(user);
+  document.getElementById('authWrap').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'flex';
+  var initials = (user.name || 'U').charAt(0).toUpperCase();
+  document.getElementById('userBtn').textContent = initials;
+  loadActData();
+  loadGData();
+  renderToday();
+  renderGPS();
+  scheduleAllActivityReminders();
+}
+
+function doLogout(){
+  clearSession();
+  curUser = null;
+  document.getElementById('profileOv').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('authWrap').style.display = 'flex';
+  switchAuth('login');
+}
+
+function openProfile(){
+  if(!curUser) return;
+  document.getElementById('profileAvatar').textContent = (curUser.name||'U').charAt(0).toUpperCase();
+  document.getElementById('profileName').textContent = curUser.name || 'User';
+  document.getElementById('profileEmail').textContent = curUser.email || '';
+  document.getElementById('profilePts').textContent = todayPts() + ' pts today';
+  renderNotifUI();
+  document.getElementById('profileOv').style.display = 'flex';
+}
+
+/* ===== Tabs ===== */
+function showTab(name, idx){
+  document.getElementById('tab-today').classList.toggle('on', name === 'today');
+  document.getElementById('tab-gps').classList.toggle('on', name === 'gps');
+  document.getElementById('tab-history').classList.toggle('on', name === 'history');
+  document.getElementById('tb0').classList.toggle('on', idx === 0);
+  document.getElementById('tb1').classList.toggle('on', idx === 1);
+  document.getElementById('tb2').classList.toggle('on', idx === 2);
+  if(name === 'today') renderToday();
+  else if(name === 'gps') renderGPS();
+  else if(name === 'history') renderHistory();
+}
+
+/* ===== Date helpers ===== */
+function tKey(){
+  var d = new Date();
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).length===1 ? '0'+(d.getMonth()+1) : (d.getMonth()+1);
+  var dd = String(d.getDate()).length===1 ? '0'+d.getDate() : d.getDate();
+  return y + '-' + m + '-' + dd;
+}
+
+/* ===== Activities: Templates + Daily Completion Log ===== */
+var DEFACTS = ['Drink water','Morning walk','Read 20 mins','Stretch / exercise','Healthy breakfast','No junk food','Sleep by 10:30pm','Plan tomorrow'];
+
+/* tmpls: array of { id, name, repeat:{type,...}, time, createdAt } */
+/* repeat.type: 'daily' | 'weekly' | 'every_n' | 'monthly' */
+/*   daily: {type:'daily'} */
+/*   weekly: {type:'weekly', days:[0..6]}  0=Sun */
+/*   every_n: {type:'every_n', n:3, start:'YYYY-MM-DD'} */
+/*   monthly: {type:'monthly', date:15} */
+var actTmpls = [];
+
+/* doneLog: { 'YYYY-MM-DD': { tmplId: true, ... } } */
+var doneLog = {};
+
+function loadActData(){
+  actTmpls = loadJ('act_tmpls', null);
+  doneLog = loadJ('act_done', {});
+  if(actTmpls === null){
+    actTmpls = [];
+    for(var i=0; i<DEFACTS.length; i++){
+      actTmpls.push({ id: i+1, name: DEFACTS[i], repeat: { type: 'daily' }, time: null, createdAt: tKey() });
+    }
+    saveActTmpls();
+  }
+}
+function saveActTmpls(){ saveJ('act_tmpls', actTmpls); }
+function saveDoneLog(){ saveJ('act_done', doneLog); }
+
+function nextTmplId(){
+  var max = 0;
+  for(var i=0; i<actTmpls.length; i++){
+    if(actTmpls[i].id > max) max = actTmpls[i].id;
+  }
+  return max + 1;
+}
+
+function findTmpl(id){
+  for(var i=0; i<actTmpls.length; i++){
+    if(actTmpls[i].id === id) return actTmpls[i];
+  }
+  return null;
+}
+
+/* Parse 'YYYY-MM-DD' into a local Date at midnight */
+function parseKey(key){
+  var parts = key.split('-');
+  return new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+}
+function daysBetween(key1, key2){
+  var d1 = parseKey(key1);
+  var d2 = parseKey(key2);
+  var ms = d2.getTime() - d1.getTime();
+  return Math.round(ms / 86400000);
+}
+
+/* Is this template due on the given date key? */
+function isDueOn(tmpl, key){
+  var r = tmpl.repeat || { type: 'daily' };
+  if(r.type === 'daily') return true;
+  if(r.type === 'weekly'){
+    var d = parseKey(key);
+    var dow = d.getDay();
+    return r.days && r.days.indexOf(dow) !== -1;
+  }
+  if(r.type === 'every_n'){
+    if(!r.start) return true;
+    var diff = daysBetween(r.start, key);
+    if(diff < 0) return false;
+    return (diff % r.n) === 0;
+  }
+  if(r.type === 'monthly'){
+    var d2 = parseKey(key);
+    return d2.getDate() === r.date;
+  }
+  return true;
+}
+
+/* Get list of tasks due today, each with its done status for today */
+function getDay(key){
+  var due = [];
+  for(var i=0; i<actTmpls.length; i++){
+    var t = actTmpls[i];
+    if(t.createdAt && key < t.createdAt) continue;
+    if(isDueOn(t, key)){
+      var doneToday = !!(doneLog[key] && doneLog[key][t.id]);
+      due.push({ id: t.id, name: t.name, time: t.time, repeat: t.repeat, done: doneToday });
+    }
+  }
+  return { activities: due };
+}
+
+function addAct(){
+  var inp = document.getElementById('newActInp');
+  var name = (inp.value || '').trim();
+  if(!name) return;
+  actTmpls.push({ id: nextTmplId(), name: name, repeat: { type: 'daily' }, time: null, createdAt: tKey() });
+  saveActTmpls();
+  inp.value = '';
+  renderToday();
+  scheduleAllActivityReminders();
+}
+
+function toggleAct(id){
+  var key = tKey();
+  if(!doneLog[key]) doneLog[key] = {};
+  doneLog[key][id] = !doneLog[key][id];
+  saveDoneLog();
+  renderToday();
+  scheduleAllActivityReminders();
+}
+
+function delAct(id){
+  var newList = [];
+  for(var i=0; i<actTmpls.length; i++){
+    if(actTmpls[i].id !== id) newList.push(actTmpls[i]);
+  }
+  actTmpls = newList;
+  saveActTmpls();
+  renderToday();
+  scheduleAllActivityReminders();
+}
+
+function todayPts(){
+  var key = tKey();
+  var day = getDay(key);
+  var pts = 0;
+  for(var i=0; i<day.activities.length; i++){
+    if(day.activities[i].done) pts += 5;
+  }
+  var gdata = gData[key];
+  if(gdata && gdata.sessions){
+    pts += gdata.sessions.length * 10;
+  }
+  return pts;
+}
+
+function levelInfo(pts){
+  if(pts >= 100) return { name: 'Legend', color: '#9b59b6' };
+  if(pts >= 60) return { name: 'Champion', color: '#f7c948' };
+  if(pts >= 35) return { name: 'Warrior', color: '#e67e22' };
+  if(pts >= 15) return { name: 'Active', color: '#3498db' };
+  return { name: 'Beginner', color: '#1D9E75' };
+}
+
+function repeatLabel(r){
+  if(!r || r.type === 'daily') return 'Daily';
+  if(r.type === 'weekly'){
+    var names = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var parts = [];
+    for(var i=0; i<(r.days||[]).length; i++){
+      parts.push(names[r.days[i]]);
+    }
+    return parts.length === 7 ? 'Daily' : parts.join(', ');
+  }
+  if(r.type === 'every_n') return 'Every ' + r.n + ' days';
+  if(r.type === 'monthly') return 'Monthly on ' + ordinal(r.date);
+  return 'Daily';
+}
+function ordinal(n){
+  var s = ['th','st','nd','rd'];
+  var v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+
+function renderToday(){
+  var key = tKey();
+  var day = getDay(key);
+  var pts = todayPts();
+  var lvl = levelInfo(pts);
+
+  document.getElementById('scoreChip').textContent = pts + ' pts';
+  document.getElementById('plvl').textContent = lvl.name;
+  document.getElementById('plvl').style.background = lvl.color;
+
+  var doneCount = 0;
+  for(var i=0; i<day.activities.length; i++){
+    if(day.activities[i].done) doneCount++;
+  }
+  document.getElementById('pmsg').textContent = doneCount + ' of ' + day.activities.length + ' tasks done today';
+
+  var html = '';
+  if(day.activities.length === 0){
+    html = '<div class="empty-state">No activities due today. Add one above!</div>';
+  } else {
+    for(var i=0; i<day.activities.length; i++){
+      var a = day.activities[i];
+      html += '<div class="row ' + (a.done ? 'done' : '') + '">';
+      html += '<button class="circle ' + (a.done ? 'chk' : '') + '" onclick="toggleAct(' + a.id + ')">' + (a.done ? '&#10003;' : '') + '</button>';
+      html += '<div class="rinfo"><div class="rname ' + (a.done ? 'strike' : '') + '">' + escHtml(a.name) + '</div>';
+      var subParts = [];
+      subParts.push(repeatLabel(a.repeat));
+      if(a.time) subParts.push(fmt12(a.time));
+      html += '<div class="rsub">' + subParts.join(' &middot; ') + '</div>';
+      html += '</div>';
+      if(a.done) html += '<div class="pts-tag">+5</div>';
+      html += '<button class="clockbtn" onclick="openActEdit(' + a.id + ')">' +
+        '<svg viewBox="0 0 24 24" width="15" height="15" stroke="#555" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>' +
+        '</button>';
+      html += '<button class="dbtn" onclick="delAct(' + a.id + ')">&#10005;</button>';
+      html += '</div>';
+    }
+  }
+  document.getElementById('actList').innerHTML = html;
+}
+
+function fmt12(t){
+  var parts = t.split(':');
+  var h = parseInt(parts[0]);
+  var m = parts[1];
+  var ap = h >= 12 ? 'PM' : 'AM';
+  var h12 = h % 12;
+  if(h12 === 0) h12 = 12;
+  return h12 + ':' + m + ' ' + ap;
+}
+
+function escHtml(s){
+  var div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+/* ===== Edit activity: repeat rule + reminder time ===== */
+var _curEditId = null;
+var _editRepeatType = 'daily';
+var _editWeekDays = [];
+
+function openActEdit(id){
+  _curEditId = id;
+  var t = findTmpl(id);
+  if(!t) return;
+
+  document.getElementById('actEditName').textContent = t.name;
+  document.getElementById('actTimeInp').value = t.time || '08:00';
+
+  var r = t.repeat || { type: 'daily' };
+  _editRepeatType = r.type;
+  _editWeekDays = (r.type === 'weekly' && r.days) ? r.days.slice() : [];
+
+  selRepeatType(r.type, true);
+
+  if(r.type === 'every_n'){
+    document.getElementById('everyNInp').value = r.n || 2;
+    document.getElementById('everyNStartInp').value = r.start || tKey();
+  } else {
+    document.getElementById('everyNInp').value = 2;
+    document.getElementById('everyNStartInp').value = tKey();
+  }
+  if(r.type === 'monthly'){
+    document.getElementById('monthlyDateInp').value = r.date || 1;
+  } else {
+    document.getElementById('monthlyDateInp').value = 1;
+  }
+
+  renderWeekDayPicker();
+  document.getElementById('actTimeOv').style.display = 'flex';
+}
+
+function selRepeatType(type, skipUiSync){
+  _editRepeatType = type;
+  var types = ['daily','weekly','every_n','monthly'];
+  for(var i=0; i<types.length; i++){
+    var el = document.getElementById('rtype-' + types[i]);
+    if(el) el.classList.toggle('sel', types[i] === type);
+  }
+  document.getElementById('weeklyRow').style.display = (type === 'weekly') ? 'block' : 'none';
+  document.getElementById('everyNRow').style.display = (type === 'every_n') ? 'block' : 'none';
+  document.getElementById('monthlyRow').style.display = (type === 'monthly') ? 'block' : 'none';
+}
+
+function renderWeekDayPicker(){
+  var names = ['S','M','T','W','T','F','S'];
+  var html = '';
+  for(var i=0; i<7; i++){
+    var sel = _editWeekDays.indexOf(i) !== -1;
+    html += '<button class="wdbtn ' + (sel ? 'sel' : '') + '" onclick="toggleWeekDay(' + i + ')">' + names[i] + '</button>';
+  }
+  document.getElementById('weekDayPicker').innerHTML = html;
+}
+
+function toggleWeekDay(i){
+  var idx = _editWeekDays.indexOf(i);
+  if(idx === -1) _editWeekDays.push(i);
+  else _editWeekDays.splice(idx, 1);
+  renderWeekDayPicker();
+}
+
+function saveActTime(){
+  var t = findTmpl(_curEditId);
+  if(!t) return;
+
+  var timeInp = document.getElementById('actTimeInp');
+  t.time = timeInp.value || null;
+
+  if(_editRepeatType === 'daily'){
+    t.repeat = { type: 'daily' };
+  } else if(_editRepeatType === 'weekly'){
+    if(_editWeekDays.length === 0){
+      alert('Pick at least one day of the week.');
+      return;
+    }
+    t.repeat = { type: 'weekly', days: _editWeekDays.slice() };
+  } else if(_editRepeatType === 'every_n'){
+    var n = parseInt(document.getElementById('everyNInp').value) || 2;
+    var start = document.getElementById('everyNStartInp').value || tKey();
+    t.repeat = { type: 'every_n', n: n, start: start };
+  } else if(_editRepeatType === 'monthly'){
+    var dt = parseInt(document.getElementById('monthlyDateInp').value) || 1;
+    if(dt < 1) dt = 1;
+    if(dt > 31) dt = 31;
+    t.repeat = { type: 'monthly', date: dt };
+  }
+
+  saveActTmpls();
+  document.getElementById('actTimeOv').style.display = 'none';
+  renderToday();
+  scheduleAllActivityReminders();
+}
+
+function clearActTime(){
+  var t = findTmpl(_curEditId);
+  if(t){
+    t.time = null;
+    saveActTmpls();
+  }
+  document.getElementById('actTimeOv').style.display = 'none';
+  renderToday();
+  scheduleAllActivityReminders();
+}
+
+/* ===== History: streaks + missed days ===== */
+function dateKeyOffset(offset){
+  var d = new Date();
+  d.setDate(d.getDate() + offset);
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).length===1 ? '0'+(d.getMonth()+1) : (d.getMonth()+1);
+  var dd = String(d.getDate()).length===1 ? '0'+d.getDate() : d.getDate();
+  return y + '-' + m + '-' + dd;
+}
+
+function computeStreak(tmpl){
+  var streak = 0;
+  for(var off = 0; off > -365; off--){
+    var key = dateKeyOffset(off);
+    if(tmpl.createdAt && key < tmpl.createdAt) break;
+    if(!isDueOn(tmpl, key)) continue;
+    var done = !!(doneLog[key] && doneLog[key][tmpl.id]);
+    if(off === 0 && !done){
+      continue;
+    }
+    if(done){
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function getRecentDays(tmpl, count){
+  var result = [];
+  var off = 0;
+  var checked = 0;
+  while(result.length < count && checked < 400){
+    var key = dateKeyOffset(off);
+    checked++;
+    off--;
+    if(tmpl.createdAt && key < tmpl.createdAt) break;
+    if(!isDueOn(tmpl, key)) continue;
+    var done = !!(doneLog[key] && doneLog[key][tmpl.id]);
+    result.push({ key: key, done: done });
+  }
+  return result;
+}
+
+function renderHistory(){
+  var html = '';
+  if(actTmpls.length === 0){
+    html = '<div class="empty-state">No activities yet</div>';
+  } else {
+    for(var i=0; i<actTmpls.length; i++){
+      var t = actTmpls[i];
+      var streak = computeStreak(t);
+      var recent = getRecentDays(t, 10);
+
+      html += '<div class="hist-card">';
+      html += '<div class="hist-top">';
+      html += '<div class="hist-name">' + escHtml(t.name) + '</div>';
+      html += '<div class="hist-streak">' + (streak > 0 ? ('\u{1F525} ' + streak) : '0') + '</div>';
+      html += '</div>';
+      html += '<div class="hist-sub">' + repeatLabel(t.repeat) + '</div>';
+      html += '<div class="hist-dots">';
+      for(var j=recent.length-1; j>=0; j--){
+        var dot = recent[j];
+        html += '<div class="hdot ' + (dot.done ? 'hdot-done' : 'hdot-miss') + '"></div>';
+      }
+      html += '</div>';
+      html += '</div>';
+    }
+  }
+  document.getElementById('historyList').innerHTML = html;
+}
+
+
+/* ===== GPS Distance Tracker ===== */
+var aType = 'walk';
+var dGoal = 5;
+var gData = {};
+var gpsOn = false;
+var gpsPaused = false;
+var gpsWatch = null;
+var gpsTimer = null;
+var gpsDist = 0;
+var gpsStart = 0;
+var gpsPausedMs = 0;
+var gpsPauseAt = null;
+var gpsPos = [];
+var msDone = {};
+var gpsErrMsg = '';
+
+function loadGData(){
+  gData = loadJ('gps', {});
+  var goal = loadJ('dgoal', null);
+  if(goal) dGoal = goal;
+}
+function saveGData(){ saveJ('gps', gData); }
+
+function setAType(t){
+  aType = t;
+  document.getElementById('at0').classList.toggle('sel', t === 'walk');
+  document.getElementById('at1').classList.toggle('sel', t === 'run');
+  document.getElementById('at2').classList.toggle('sel', t === 'cycle');
+}
+
+function haversine(la1, lo1, la2, lo2){
+  var R = 6371000;
+  var dLa = (la2-la1) * Math.PI/180;
+  var dLo = (lo2-lo1) * Math.PI/180;
+  var a = Math.sin(dLa/2)*Math.sin(dLa/2) + Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2);
+  var c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R*c;
+}
+
+function fmtTime(ms){
+  var totalSec = Math.floor(ms/1000);
+  var mm = Math.floor(totalSec/60);
+  var ss = totalSec % 60;
+  var mmStr = mm < 10 ? '0'+mm : ''+mm;
+  var ssStr = ss < 10 ? '0'+ss : ''+ss;
+  return mmStr + ':' + ssStr;
+}
+
+function startGPS(){
+  if(!navigator.geolocation){
+    gpsErrMsg = 'GPS not supported on this browser.';
+    renderGPS();
+    return;
+  }
+  gpsErrMsg = 'Requesting location permission...';
+  renderGPS();
+
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      gpsErrMsg = '';
+      gpsOn = true;
+      gpsPaused = false;
+      gpsDist = 0;
+      gpsPos = [];
+      gpsStart = Date.now();
+      gpsPausedMs = 0;
+      gpsPauseAt = null;
+      msDone = computeAlreadyDoneMs();
+      gpsPos.push({ la: pos.coords.latitude, lo: pos.coords.longitude });
+
+      gpsWatch = navigator.geolocation.watchPosition(
+        function(pos2){
+          if(gpsPaused) return;
+          if(gpsPos.length > 0){
+            var p = gpsPos[gpsPos.length-1];
+            var d = haversine(p.la, p.lo, pos2.coords.latitude, pos2.coords.longitude);
+            if(d > 1 && d < 500) gpsDist += d;
+          }
+          gpsPos.push({ la: pos2.coords.latitude, lo: pos2.coords.longitude });
+          checkMs(Math.min(100, Math.round(((todayCompletedDist()+gpsDist)/1000)/dGoal*100)));
+          renderGPS();
+        },
+        function(err){
+          var msgs = { 1: 'Permission denied', 2: 'Signal lost - move to open area', 3: 'GPS timeout' };
+          gpsErrMsg = 'Error: ' + (msgs[err.code] || 'GPS error');
+          renderGPS();
+        },
+        { enableHighAccuracy: true, maximumAge: 2000, timeout: 20000 }
+      );
+
+      gpsTimer = setInterval(function(){
+        if(!gpsPaused) renderGPS();
+      }, 1000);
+      renderGPS();
+    },
+    function(err){
+      if(err.code === 1){
+        gpsErrMsg = 'Location permission denied. Enable it in your browser site settings.';
+      } else if(err.code === 2){
+        gpsErrMsg = 'Could not get location. Move to an open area and try again.';
+      } else {
+        gpsErrMsg = 'GPS timed out. Please try again.';
+      }
+      renderGPS();
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+  );
+}
+
+function pauseGPS(){
+  gpsPaused = !gpsPaused;
+  if(gpsPaused){
+    gpsPauseAt = Date.now();
+  } else {
+    if(gpsPauseAt){
+      gpsPausedMs += Date.now() - gpsPauseAt;
+      gpsPauseAt = null;
+    }
+  }
+  renderGPS();
+}
+
+function stopGPS(){
+  if(gpsWatch !== null){
+    navigator.geolocation.clearWatch(gpsWatch);
+    gpsWatch = null;
+  }
+  if(gpsTimer !== null){
+    clearInterval(gpsTimer);
+    gpsTimer = null;
+  }
+  var elapsed = Date.now() - gpsStart - gpsPausedMs;
+  var key = tKey();
+  if(!gData[key]) gData[key] = { sessions: [] };
+  if(gpsDist > 10){
+    gData[key].sessions.push({
+      type: aType,
+      dist: gpsDist,
+      time: elapsed,
+      at: new Date().toISOString()
+    });
+    saveGData();
+  }
+  gpsOn = false;
+  gpsPaused = false;
+  gpsDist = 0;
+  gpsPos = [];
+  msDone = {};
+  gpsErrMsg = '';
+  renderGPS();
+}
+
+function checkMs(pct){
+  var milestones = [25, 50, 75, 90, 100];
+  for(var i=0; i<milestones.length; i++){
+    var m = milestones[i];
+    if(pct >= m && !msDone[m]){
+      msDone[m] = true;
+      showMs(m);
+    }
+  }
+}
+
+function showMs(pct){
+  var emojis = { 25: '\u{1F44D}', 50: '\u{1F525}', 75: '\u{1F981}', 90: '\u{1F680}', 100: '\u{1F3C6}' };
+  var msgs = { 25: 'Quarter way there!', 50: 'Halfway done!', 75: 'Almost there!', 90: 'Final push!', 100: 'Goal achieved!' };
+  document.getElementById('msEmoji').textContent = emojis[pct] || '\u{1F389}';
+  document.getElementById('msPct').textContent = pct + '%';
+  document.getElementById('msMsg').textContent = msgs[pct] || 'Great job!';
+  document.getElementById('msSub').textContent = 'Keep up the great work!';
+  document.getElementById('msOv').style.display = 'flex';
+}
+
+function openDGoal(){
+  var opts = [1,2,3,5,10];
+  var html = '';
+  for(var i=0; i<opts.length; i++){
+    html += '<button class="gopt ' + (opts[i]===dGoal?'sel':'') + '" data-val="' + opts[i] + '" onclick="selDGoalOpt(' + opts[i] + ')">' + opts[i] + '</button>';
+  }
+  document.getElementById('dGoalOpts').innerHTML = html;
+  document.getElementById('dGoalOv').style.display = 'flex';
+}
+var _tempDGoal = null;
+function selDGoalOpt(v){
+  _tempDGoal = v;
+  var btns = document.querySelectorAll('#dGoalOpts .gopt');
+  for(var i=0; i<btns.length; i++){
+    btns[i].classList.toggle('sel', parseInt(btns[i].getAttribute('data-val')) === v);
+  }
+}
+function saveDGoal(){
+  if(_tempDGoal !== null) dGoal = _tempDGoal;
+  saveJ('dgoal', dGoal);
+  document.getElementById('dGoalOv').style.display = 'none';
+  renderGPS();
+}
+
+function todayCompletedDist(){
+  var key = tKey();
+  var day = gData[key];
+  if(!day || !day.sessions) return 0;
+  var total = 0;
+  for(var i=0; i<day.sessions.length; i++){
+    total += day.sessions[i].dist;
+  }
+  return total;
+}
+
+function computeAlreadyDoneMs(){
+  var km = todayCompletedDist() / 1000;
+  var pct = Math.min(100, Math.round(km/dGoal*100));
+  var milestones = [25, 50, 75, 90, 100];
+  var done = {};
+  for(var i=0; i<milestones.length; i++){
+    if(pct >= milestones[i]) done[milestones[i]] = true;
+  }
+  return done;
+}
+
+function renderGPS(){
+  var totalDist = todayCompletedDist() + gpsDist;
+  var km = totalDist / 1000;
+  document.getElementById('gDist').textContent = km.toFixed(2);
+
+  var elapsed = gpsOn ? (Date.now() - gpsStart - gpsPausedMs - (gpsPaused && gpsPauseAt ? (Date.now()-gpsPauseAt) : 0)) : 0;
+  document.getElementById('gTime').textContent = fmtTime(Math.max(0,elapsed));
+
+  document.getElementById('gGoalLbl').textContent = 'Goal: ' + dGoal + ' km';
+  var pct = Math.min(100, Math.round(km/dGoal*100));
+  document.getElementById('gpFill').style.width = pct + '%';
+
+  var errArea = document.getElementById('gpsErrArea');
+  errArea.innerHTML = gpsErrMsg ? '<div class="gerr">' + escHtml(gpsErrMsg) + '</div>' : '';
+
+  var btnArea = document.getElementById('gpsBtns');
+  if(!gpsOn){
+    btnArea.innerHTML = '<button class="gactbtn ggo" onclick="startGPS()">Start Tracking</button>';
+  } else {
+    btnArea.innerHTML =
+      '<button class="gactbtn gpause" onclick="pauseGPS()">' + (gpsPaused ? 'Resume' : 'Pause') + '</button>' +
+      '<button class="gactbtn gstop" onclick="stopGPS()">Stop</button>';
+  }
+
+  renderGHist();
+}
+
+function renderGHist(){
+  var key = tKey();
+  var day = gData[key];
+  var html = '';
+  if(!day || !day.sessions || day.sessions.length === 0){
+    html = '<div class="empty-state">No sessions yet today</div>';
+  } else {
+    for(var i=0; i<day.sessions.length; i++){
+      var s = day.sessions[i];
+      var km = (s.dist/1000).toFixed(2);
+      var icons = { walk: '\u{1F6B6}', run: '\u{1F3C3}', cycle: '\u{1F6B4}' };
+      html += '<div class="row">';
+      html += '<div style="font-size:20px;flex-shrink:0">' + (icons[s.type] || '\u{1F6B6}') + '</div>';
+      html += '<div class="rinfo"><div class="rname" style="text-transform:capitalize">' + s.type + '</div>' +
+              '<div style="font-size:10px;color:#555;margin-top:2px">' + fmtTime(s.time) + '</div></div>';
+      html += '<div style="font-size:13px;font-weight:700;color:#1D9E75">' + km + ' km</div>';
+      html += '</div>';
+    }
+    if(day.sessions.length > 1){
+      var totalKm = (todayCompletedDist()/1000).toFixed(2);
+      html += '<div class="row" style="background:#0d1a0d">';
+      html += '<div class="rinfo"><div class="rname" style="font-weight:700">Total (' + day.sessions.length + ' sessions)</div></div>';
+      html += '<div style="font-size:13px;font-weight:700;color:#1D9E75">' + totalKm + ' km</div>';
+      html += '</div>';
+    }
+  }
+  document.getElementById('gHistList').innerHTML = html;
+}
+
+/* ===== Init ===== */
+function init(){
+  var splash = document.getElementById('splash');
+  if(splash) splash.style.display = 'none';
+
+  setupPWA();
+
+  var session = getSession();
+  if(session && session.email){
+    var users = getUsers();
+    if(users[session.email]){
+      loginUser(users[session.email]);
+      return;
+    }
+  }
+
+  document.getElementById('authWrap').style.display = 'flex';
+  renderAuth();
+}
+
+init();
+
+
+
+/* ===== PWA: Service Worker (manifest + icons are real files) ===== */
+var ICON192_B64 = "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";
+
+function setupPWA(){
+  registerServiceWorker();
+}
+
+function registerServiceWorker(){
+  if(!("serviceWorker" in navigator)) return;
+  try{
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      console.log("Service worker registered");
+    }).catch(function(err){
+      console.log("SW registration failed: " + err.message);
+    });
+  }catch(e){
+    console.log("SW setup error: " + e.message);
+  }
+}
+
+/* ===== Notifications ===== */
+var notifTimers = {};
+
+function loadNotifSettings(){
+  var s = loadJ("notif", { enabled: false });
+  return s;
+}
+function saveNotifSettings(s){ saveJ("notif", s); }
+
+function renderNotifUI(){
+  var s = loadNotifSettings();
+  var knob = document.getElementById("notifKnob");
+  var toggle = document.getElementById("notifToggle");
+  var status = document.getElementById("notifStatus");
+
+  if(s.enabled){
+    if(knob) knob.style.left = "22px";
+    if(toggle) toggle.style.background = "#1D9E75";
+  } else {
+    if(knob) knob.style.left = "2px";
+    if(toggle) toggle.style.background = "#333";
+  }
+
+  if(status){
+    if(!("Notification" in window)){
+      status.textContent = "Notifications not supported on this browser";
+    } else if(Notification.permission === "denied"){
+      status.textContent = "Notifications blocked. Enable in browser site settings.";
+    } else if(s.enabled){
+      status.textContent = "Tap the clock icon next to any activity to set its reminder time";
+    } else {
+      status.textContent = "Turn on, then set a reminder time per activity using the clock icon";
+    }
+  }
+}
+
+function toggleNotif(){
+  var s = loadNotifSettings();
+  if(!s.enabled){
+    if(!("Notification" in window)){
+      alert("Notifications are not supported on this browser.");
+      return;
+    }
+    if(Notification.permission === "denied"){
+      alert("Notifications are blocked. Please enable them in your browser site settings, then try again.");
+      return;
+    }
+    if(Notification.permission !== "granted"){
+      Notification.requestPermission().then(function(perm){
+        if(perm === "granted"){
+          s.enabled = true;
+          saveNotifSettings(s);
+          renderNotifUI();
+          scheduleAllActivityReminders();
+          new Notification("My Daily App", { body: "Reminders enabled! Tap the clock icon next to any activity to set its time.", icon: "icon-192.png" });
+        } else {
+          renderNotifUI();
+        }
+      });
+      return;
+    }
+    s.enabled = true;
+  } else {
+    s.enabled = false;
+    clearAllNotifTimers();
+  }
+  saveNotifSettings(s);
+  renderNotifUI();
+  if(s.enabled) scheduleAllActivityReminders();
+}
+
+function clearAllNotifTimers(){
+  for(var k in notifTimers){
+    clearTimeout(notifTimers[k]);
+  }
+  notifTimers = {};
+}
+
+function scheduleAllActivityReminders(){
+  clearAllNotifTimers();
+  var s = loadNotifSettings();
+  if(!s.enabled) return;
+  if(!("Notification" in window) || Notification.permission !== "granted") return;
+  if(!curUser) return;
+
+  var key = tKey();
+  var day = getDay(key);
+  for(var i=0; i<day.activities.length; i++){
+    var act = day.activities[i];
+    if(act.time && !act.done){
+      scheduleOneReminder(act);
+    }
+  }
+}
+
+function scheduleOneReminder(act){
+  var parts = act.time.split(":");
+  var h = parseInt(parts[0]);
+  var m = parseInt(parts[1]);
+
+  var now = new Date();
+  var target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+
+  if(target.getTime() <= now.getTime()) return;
+
+  var delay = target.getTime() - now.getTime();
+  var actId = act.id;
+
+  notifTimers[actId] = setTimeout(function(){
+    fireActivityNotif(actId);
+    delete notifTimers[actId];
+  }, delay);
+}
+
+function fireActivityNotif(actId){
+  if(!("Notification" in window) || Notification.permission !== "granted") return;
+  var key = tKey();
+  var day = getDay(key);
+  var act = null;
+  for(var i=0; i<day.activities.length; i++){
+    if(day.activities[i].id === actId) act = day.activities[i];
+  }
+  if(!act || act.done) return;
+
+  var body = "Time for: " + act.name;
+  try{
+    if(navigator.serviceWorker && navigator.serviceWorker.ready){
+      navigator.serviceWorker.ready.then(function(reg){
+        if(reg.showNotification){
+          reg.showNotification("My Daily App", { body: body, icon: "icon-192.png" });
+        } else {
+          new Notification("My Daily App", { body: body, icon: "icon-192.png" });
+        }
+      });
+    } else {
+      new Notification("My Daily App", { body: body, icon: "icon-192.png" });
+    }
+  }catch(e){
+    try{ new Notification("My Daily App", { body: body }); }catch(e2){}
+  }
+}
+
+</script>
+</body>
+</html>
